@@ -4,20 +4,14 @@ const { isMatchActive } = require("../socket/activeMatches");
 const createAndPassError = require("../utils/createAndPassError");
 
 const getMatches = async (req, res, next) => {
-  const { category, fromDate: fromDateStr, toDate: toDateStr } = req.query;
+  const { category, fromDate, toDate } = req.query;
 
-  if (category == null || fromDateStr == null || toDateStr == null) {
+  if (category == null || fromDate == null || toDate == null) {
     return createAndPassError(400, "All search parameters are required", next);
   }
 
-  const fromDate = new Date(fromDateStr);
-  fromDate.setHours(0, 0, 0, 0);
-
-  const toDate = new Date(toDateStr);
-  toDate.setHours(23, 59, 59, 999);
-
   const filter = {
-    createdAt: { $gte: fromDate, $lte: toDate },
+    createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) },
   };
   if (category !== "all") {
     filter.matchStatus = category;
@@ -57,6 +51,9 @@ const createNewMatch = async (req, res, next) => {
     battingFirstTeamName,
     battingSecondTeamName,
   } = req.body;
+
+  console.log(totalPlayersPerTeam, totalOversPerInning,battingFirstTeamName, battingSecondTeamName)
+  
   // Create an array of empty overs
   const overs = new Array(totalOversPerInning).fill({ deliveries: [] });
 
